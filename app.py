@@ -271,7 +271,7 @@ questions = [
         "emoji": "🎨", "text": "나의 소울을 가장 잘 표현하는 컬러는?",
         "options": [
             ("💙 깊고 고요한 오션 블루 계열", "water"),
-            ("💚 편안함과 치유를 주는 포레스트 그린 계열", "grass"),
+            ("💚 편안함และ 치유를 주는 포레스트 그린 계열", "grass"),
             ("❤️ 시선을 사로잡는 뜨거운 레드 계열", "fire"),
             ("💛 어디서나 톡톡 튀는 네온 옐로우 계열", "electric"),
         ]
@@ -315,7 +315,7 @@ questions = [
     {
         "emoji": "🦁", "text": "내가 생각하는 나의 가장 매력적인 무기는?",
         "options": [
-            ("💙 바다 같은 넓은 포용력과 깊은 감수성", "water"),
+            ("💙 바다 같은 넓은 포용력และ 깊은 감수성", "water"),
             ("💚 흔들리지 않는 뚝심과 한결같은 성실함", "grass"),
             ("❤️ 불꽃 같은 추진력과 무한 긍정 에너지", "fire"),
             ("💛 번뜩이는 두뇌 회전과 쾌활한 유머 감각", "electric"),
@@ -446,19 +446,19 @@ if st.session_state.page == 'intro':
 
     st.markdown("""
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin:1.5rem 0;">
-        <div style="background:linear-gradient(135deg,#0077b6,#00b4d8);border-radius:20px;padding:1.2rem;text-align:center;animation:float 3s ease-in-out infinite;">
+        <div style="background:linear-gradient(135deg,#0077b6,#00b4d8);border-radius:20px;padding:1.2rem;text-align:center;">
             <div style="font-size:2rem;" class="water-bubble">🌊</div>
             <div style="color:#fff;font-weight:800;font-size:1.1rem;margin-top:5px;">물 타입</div>
         </div>
-        <div style="background:linear-gradient(135deg,#2d6a4f,#52b788);border-radius:20px;padding:1.2rem;text-align:center;animation:float 3s ease-in-out infinite 0.5s;">
+        <div style="background:linear-gradient(135deg,#2d6a4f,#52b788);border-radius:20px;padding:1.2rem;text-align:center;">
             <div style="font-size:2rem;" class="leaf-sway">🌿</div>
             <div style="color:#fff;font-weight:800;font-size:1.1rem;margin-top:5px;">풀 타입</div>
         </div>
-        <div style="background:linear-gradient(135deg,#dc2626,#f97316);border-radius:20px;padding:1.2rem;text-align:center;animation:float 3s ease-in-out infinite 1s;">
+        <div style="background:linear-gradient(135deg,#dc2626,#f97316);border-radius:20px;padding:1.2rem;text-align:center;">
             <div style="font-size:2rem;" class="fire-flicker">🔥</div>
             <div style="color:#fff;font-weight:800;font-size:1.1rem;margin-top:5px;">불 타입</div>
         </div>
-        <div style="background:linear-gradient(135deg,#ca8a04,#eab308);border-radius:20px;padding:1.2rem;text-align:center;animation:float 3s ease-in-out infinite 1.5s;">
+        <div style="background:linear-gradient(135deg,#ca8a04,#eab308);border-radius:20px;padding:1.2rem;text-align:center;">
             <div style="font-size:2rem;" class="electric-zap">⚡</div>
             <div style="color:#fff;font-weight:800;font-size:1.1rem;margin-top:5px;">전기 타입</div>
         </div>
@@ -468,8 +468,8 @@ if st.session_state.page == 'intro':
     _, col_btn, _ = st.columns([0.5, 2, 0.5])
     with col_btn:
         if st.button("✨ 진단 시작하기!", key="start_game"):
+            reset()  # 시작 시 스코어 클린 초기화
             st.session_state.page = 'quiz'
-            st.session_state.current_q = 0
             st.rerun()
 
 # ---- [PAGE] QUIZ ----
@@ -478,12 +478,6 @@ elif st.session_state.page == 'quiz':
     q = questions[q_idx]
     total = len(questions)
     progress_pct = int((q_idx / total) * 100)
-
-    # 현재 문항의 선택지 셔플 (세션에 보존하여 버튼 클릭 시 리로드되어도 유지되게 고정)
-    if q_idx not in st.session_state.shuffled_options:
-        st.session_state.shuffled_options[q_idx] = random.sample(q['options'], len(q['options']))
-    
-    current_options = st.session_state.shuffled_options[q_idx]
 
     # 상단 진행바 마크업
     st.markdown(f"""
@@ -507,10 +501,18 @@ elif st.session_state.page == 'quiz':
     </div>
     """, unsafe_allow_html=True)
 
-    # 무작위로 섞인 4가지 선택지 버튼 생성 및 반영
+    # 현재 문항의 선택지 무작위 셔플 보존 로직
+    if q_idx not in st.session_state.shuffled_options:
+        st.session_state.shuffled_options[q_idx] = random.sample(q['options'], len(q['options']))
+    
+    current_options = st.session_state.shuffled_options[q_idx]
+
+    # 매칭 스코어 KeyError를 완전히 없앤 전용 버튼 라우팅 인터페이스
     for opt_text, opt_type in current_options:
-        if st.button(opt_text, key=f"btn_{q_idx}_{opt_type}"):
-            st.session_state.scores[opt_type] += 1
+        if st.button(opt_text, key=f"btn_q{q_idx}_{opt_text[:10]}"):
+            # 안전하게 세션 스코어 합산 가동
+            st.session_state.scores[opt_type] = st.session_state.scores.get(opt_type, 0) + 1
+            
             if q_idx + 1 < total:
                 st.session_state.current_q += 1
                 st.rerun()
@@ -523,7 +525,7 @@ elif st.session_state.page == 'result':
     winner = max(st.session_state.scores, key=st.session_state.scores.get)
     r = results[winner]
 
-    # 전체 페이지 그라디언트 배경 설정
+    # 배경 테마 동적 주입
     st.markdown(f"""
     <style>
     .stApp {{
@@ -534,55 +536,56 @@ elif st.session_state.page == 'result':
     </style>
     """, unsafe_allow_html=True)
 
-    # 흩날리는 테마 아이콘 배경 구조 생성
+    # 화면에 부유하는 아이콘 배치 파트
     deco_emojis = r['particles']
     deco_html = '<div style="position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;overflow:hidden;z-index:0;">'
-    for i in range(15):
+    for i in range(12):
         emoji = deco_emojis[i % len(deco_emojis)]
         x, y = random.randint(0, 100), random.randint(0, 100)
         size = random.uniform(1.5, 2.5)
-        dur = random.uniform(2.5, 5)
-        deco_html += f'<div style="position:absolute;left:{x}%;top:{y}%;font-size:{size}rem;opacity:0.25;animation:float {dur}s ease-in-out infinite;">{emoji}</div>'
+        dur = random.uniform(3, 6)
+        deco_html += f'<div style="position:absolute;left:{x}%;top:{y}%;font-size:{size}rem;opacity:0.2;animation:float {dur}s ease-in-out infinite;">{emoji}</div>'
     deco_html += '</div>'
     st.markdown(deco_html, unsafe_allow_html=True)
 
     total_answers = sum(st.session_state.scores.values())
+    if total_answers == 0: total_answers = 1 # 분모 0 방지 방어코드
     score_pct = int((st.session_state.scores[winner] / total_answers) * 100)
 
-    # 특징 리스트들의 HTML 요소 문자열 빌드
+    # 특징 리스트 빌딩
     traits_html = ""
     for trait in r['traits']:
-        traits_html += f'<li style="color: #333333 !important; background: rgba(255,255,255,0.5) !important; border: 1px solid {r["border_color"]}33;">{trait}</li>'
+        traits_html += f'<li style="color: #333333 !important; background: rgba(255, 255, 255, 0.6) !important; padding: 0.7rem 1rem; border-radius: 12px; margin-bottom: 0.5rem; font-weight: bold; border: 1px solid rgba(0,0,0,0.05);">{trait}</li>'
 
-    # [핵심 수정한 부분]: 단 하나의 닫히는 마크업 블록 구조로 가두어 완벽히 출력 렌더링
+    # [마크업 버그 완벽 패치]: f-string 중괄호 충돌을 회피하기 위해 단일 완결된 HTML 블록으로 마크다운에 주입
     full_result_html = f"""
     <div class="result-card" style="background: {r['card_bg']} !important; border-color: {r['border_color']} !important;">
         <div style="font-size:5rem; display:inline-block;" class="{r['anim_class']}">{r['main_pokemon']}</div>
-        <div style="font-size:1rem; letter-spacing:3px; font-weight:800; color: {r['text_color']} !important; text-transform:uppercase; margin:0.5rem 0;">당신의 매칭 속성은</div>
-        <div class="result-title" style="color: {r['text_color']} !important;">{r['name']}</div>
+        <div style="font-size:1rem; letter-spacing:3px; font-weight:800; color: {r['text_color']} !important; margin:0.5rem 0;">당신의 매칭 속성은</div>
+        <div class="result-title" style="color: {r['text_color']} !important; font-family: sans-serif;">{r['name']}</div>
         <div class="result-subtitle" style="color: {r['text_color']} !important; opacity:0.85;">{r['subtitle']}</div>
         
-        <div style="background:rgba(0,0,0,0.06); border-radius:50px; padding:0.6rem 1.5rem; margin:1rem 0; font-size:1.1rem; font-weight:800; color: {r['text_color']} !important; border: 1px dashed {r['border_color']};">
-            💡 {r['name']} 싱크로율 {score_pct}%
+        <div style="background:rgba(0,0,0,0.05); border-radius:50px; padding:0.6rem 1.5rem; margin:1.2rem 0; font-size:1.1rem; font-weight:800; color: {r['text_color']} !important; display:inline-block;">
+            💡 싱크로율 {score_pct}%
         </div>
         
-        <ul class="trait-list">
+        <ul class="trait-list" style="list-style:none; padding:0; margin:1.5rem 0;">
             {traits_html}
         </ul>
         
-        <div style="background:rgba(255,255,255,0.6); border-radius:16px; padding:1rem 1.5rem; margin:1rem 0; text-align:left; border:1px solid {r['border_color']}44;">
+        <div style="background:rgba(255,255,255,0.7); border-radius:16px; padding:1.1rem 1.5rem; margin:1rem 0; text-align:left; border:1px solid rgba(0,0,0,0.06);">
             <div style="font-weight:800; font-size:1.1rem; color:{r['text_color']} !important; margin-bottom:0.3rem;">🎮 대표적인 파트너 포켓몬</div>
             <div style="color:#222222 !important; font-size:1rem; font-weight:600;">{r['pokemon_examples']}</div>
         </div>
         
-        <div style="background: {r['border_color']}22; border-radius:16px; padding:0.8rem 1.5rem; margin:0.5rem 0; font-size:1rem; color:{r['text_color']} !important; font-weight:700;">
-            💕 환상의 케미: {r['compatible']}
+        <div style="background:rgba(255,255,255,0.4); border-radius:16px; padding:0.9rem 1.5rem; margin:0.5rem 0; font-size:1rem; color:{r['text_color']} !important; font-weight:700; border:1px solid rgba(0,0,0,0.04);">
+            {r['compatible']}
         </div>
     </div>
     """
     st.markdown(full_result_html, unsafe_allow_html=True)
 
-    # 아래쪽 종합 속성별 분석 그래프 보드 배치
+    # 6. 하단 멀티 에너그래프 스코어 보드
     st.markdown("""
     <div style="background:rgba(0,0,0,0.4); border-radius:24px; padding:1.5rem; margin:1.5rem 0; backdrop-filter:blur(10px); border: 1px solid rgba(255,255,255,0.1);">
         <div style="font-size:1.2rem; font-weight:800; margin-bottom:1.2rem; text-align:center; color:#fff;">📊 내 속성 멀티 에너그래프</div>
@@ -595,7 +598,7 @@ elif st.session_state.page == 'result':
         ("electric", "⚡ 전기 타입", "#eab308"),
     ]
     for t, label, color in type_info:
-        pct = int((st.session_state.scores[t] / total_answers) * 100)
+        pct = int((st.session_state.scores.get(t, 0) / total_answers) * 100)
         st.markdown(f"""
         <div style="margin:0.6rem 0;">
             <div style="display:flex; justify-content:space-between; margin-bottom:0.3rem; font-size:0.95rem; font-weight:700; color:#fff;">
@@ -609,11 +612,11 @@ elif st.session_state.page == 'result':
 
     st.markdown("</div>", unsafe_allow_html=True)
 
-    # 리스타트 버튼 배치
-    st.markdown('<div class="restart-btn" style="text-align:center; margin-top:1.5rem;">', unsafe_allow_html=True)
+    # 리스타트 단독 컴포넌트 분리 배치
     _, col_reset, _ = st.columns([1, 2, 1])
     with col_reset:
+        st.markdown('<div class="restart-btn" style="text-align:center; margin-top:1rem;">', unsafe_allow_html=True)
         if st.button("🔄 처음부터 다시 하기", key="final_restart_btn"):
             reset()
             st.rerun()
-    st.markdown('</div>', unsafe_allow_html=True)
+        st.markdown('</div>', unsafe_allow_html=True)
