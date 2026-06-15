@@ -69,9 +69,9 @@ st.markdown("""
         animation: pulse 1.5s infinite;
     }
     </style>
-""", unsafe_unsafe_allow_html=True)
+""", unsafe_allow_html=True) # <- 이 부분의 오타를 수정했습니다!
 
-# 2. 질문 데이터셋 (12개 문항, 각 선택지는 물, 풀, 불, 전기 순서)
+# 2. 질문 데이터셋 (12개 문항)
 questions = [
     {
         "q": "주말이 찾아왔을 때, 당신이 가장 하고 싶은 것은?",
@@ -183,50 +183,41 @@ questions = [
     }
 ]
 
-# Session State 초기화 (사용자 선택 데이터 및 진행도 저장)
+# Session State 초기화
 if 'step' not in st.session_state:
     st.session_state.step = 0
 if 'scores' not in st.session_state:
     st.session_state.scores = {"물": 0, "풀": 0, "불": 0, "전기": 0}
 
 # 3. 앱 화면 구성
-# 메인 홈 화면
 if st.session_state.step == 0:
     st.markdown('<div class="title-box"><h1>✨ 나의 포켓몬 속성 진단 ✨</h1><p>12개의 질문으로 알아보는 나의 숨겨진 타입!</p></div>', unsafe_allow_html=True)
-    
-    # 귀여운 몬스터볼 이모지 애니메이션 공간
     st.markdown("<h1 style='text-align: center; font-size: 80px; animation: float 2s infinite;'>🔴</h1>", unsafe_allow_html=True)
     
     if st.button("테스트 시작하기! 👉"):
         st.session_state.step = 1
         st.rerun()
 
-# 질문 진행 화면 (1 ~ 12번)
 elif 1 <= st.session_state.step <= 12:
     current_idx = st.session_state.step - 1
     q_data = questions[current_idx]
     
-    # 진행도 표시 바
     st.progress(st.session_state.step / 12)
     st.write(f"**Q{st.session_state.step}. {q_data['q']}**")
     st.write("")
     
-    # 버튼을 클릭하면 스코어를 더하고 즉시 다음 질문 단계로 넘어감
     for option_text, type_attr in q_data['options']:
         if st.button(option_text, key=f"q_{st.session_state.step}_{type_attr}"):
             st.session_state.scores[type_attr] += 1
             st.session_state.step += 1
             st.rerun()
 
-# 4. 결과 분석 및 속성별 커스텀 페이지 출력
 else:
     st.markdown('<div class="loading-text">🔮 당신의 에너지를 분석하는 중... 🔮</div>', unsafe_allow_html=True)
-    time.sleep(1.5) # 귀여운 로딩 연출
+    time.sleep(1.5)
     
-    # 가장 높은 점수의 속성 추출
     final_type = max(st.session_state.scores, key=st.session_state.scores.get)
     
-    # 속성별 디자인 정의 (물: 파랑, 풀: 초록, 불: 빨강, 전기: 노랑)
     type_styles = {
         "물": {
             "bg": "#E0F2FE", "border": "#0284C7", "text": "#0369A1", "emoji": "🌊", 
@@ -252,7 +243,6 @@ else:
     
     style = type_styles[final_type]
     
-    # 속성 맞춤형 결과 카드 HTML 마크업 생성
     st.markdown(f"""
         <div class="result-card" style="background-color: {style['bg']}; border-color: {style['border']}; color: {style['text']};">
             <h1 style="font-size: 80px; margin: 0; animation: float 2.5s infinite;">{style['emoji']}</h1>
@@ -265,7 +255,6 @@ else:
     st.write("")
     st.write("")
     
-    # 다시 하기 버튼
     if st.button("🔄 테스트 다시 하기"):
         st.session_state.step = 0
         st.session_state.scores = {"물": 0, "풀": 0, "불": 0, "전기": 0}
