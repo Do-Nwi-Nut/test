@@ -8,7 +8,7 @@ st.set_page_config(
     layout="centered"
 )
 
-# 2. 글로벌 CSS & 애니메이션 설정
+# 2. 글로벌 CSS 및 애니메이션 설정 (중괄호 충돌이 없도록 일반 문자열 처리)
 st.markdown("""
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Gamja+Flower&display=swap');
@@ -25,11 +25,9 @@ html, body, [class*="css"] {
     min-height: 100vh;
 }
 
-/* 스트림릿 기본 요소 숨기기 */
 #MainMenu, footer, header { visibility: hidden; }
 .block-container { padding-top: 2rem; }
 
-/* 키프레임 애니메이션 */
 @keyframes twinkle {
     0%, 100% { opacity: 0.2; transform: scale(1); }
     50% { opacity: 1; transform: scale(1.3); }
@@ -60,7 +58,6 @@ html, body, [class*="css"] {
     50% { opacity: 0.8; transform: skewX(-2deg); }
 }
 
-/* 컴포넌트 스타일링 */
 .hero-section {
     text-align: center;
     padding: 2rem 1rem;
@@ -100,7 +97,6 @@ html, body, [class*="css"] {
     animation: twinkle var(--dur) ease-in-out infinite var(--delay);
 }
 
-/* 질문 카드 */
 .q-card {
     background: rgba(255,255,255,0.07);
     border: 2px solid rgba(255,255,255,0.15);
@@ -131,7 +127,6 @@ html, body, [class*="css"] {
     animation: float 3s ease-in-out infinite;
 }
 
-/* 진행 바 */
 .progress-container {
     background: rgba(255,255,255,0.1);
     border-radius: 20px;
@@ -147,7 +142,6 @@ html, body, [class*="css"] {
     box-shadow: 0 0 10px rgba(102,126,234,0.7);
 }
 
-/* 선택지 버튼 커스텀 */
 div.stButton > button {
     width: 100%;
     background: rgba(255,255,255,0.08) !important;
@@ -169,7 +163,7 @@ div.stButton > button:hover {
     box-shadow: 0 8px 20px rgba(0,0,0,0.3) !important;
 }
 
-/* 결과 페이지 전용 카드 디자인 */
+/* 결과창 전용 클래스 */
 .result-card {
     border-radius: 32px;
     padding: 3rem 2rem;
@@ -199,7 +193,7 @@ div.stButton > button:hover {
     list-style: none;
 }
 .trait-list li {
-    padding: 0.6rem 1rem;
+    padding: 0.7rem 1rem;
     font-size: 1.1rem;
     font-weight: bold;
     margin-bottom: 0.5rem;
@@ -207,15 +201,16 @@ div.stButton > button:hover {
     display: flex;
     align-items: center;
     gap: 0.5rem;
+    color: #333333 !important;
+    background: rgba(255, 255, 255, 0.6) !important;
+    border: 1px solid rgba(0,0,0,0.05);
 }
 
-/* 각 속성별 애니메이션 클래스 연결 */
 .water-bubble { display: inline-block; animation: float 2.5s ease-in-out infinite; }
 .fire-flicker { display: inline-block; animation: fireFlicker 0.6s ease-in-out infinite; }
 .leaf-sway { display: inline-block; animation: leafSway 1.8s ease-in-out infinite; }
 .electric-zap { display: inline-block; animation: electricZap 1.2s ease-in-out infinite; }
 
-/* 다시하기 버튼 전용 */
 .restart-btn > button {
     background: rgba(255,255,255,0.2) !important;
     border: 2px solid rgba(255,255,255,0.5) !important;
@@ -231,7 +226,7 @@ div.stButton > button:hover {
 </style>
 """, unsafe_allow_html=True)
 
-# 3. 배경 별빛 배치 (렌더링 무작위성 고정)
+# 3. 별빛 고정 효과
 if 'stars_html' not in st.session_state:
     stars = '<div class="stars-container">'
     star_chars = ["★", "✦", "✧", "⊹", "✩", "⋆"]
@@ -247,7 +242,7 @@ if 'stars_html' not in st.session_state:
 
 st.markdown(st.session_state.stars_html, unsafe_allow_html=True)
 
-# 4. 12개 질문 데이터 구축
+# 4. 질문 데이터 (12문항)
 questions = [
     {
         "emoji": "🌅", "text": "주말 오전, 눈을 떴을 때 나는 보통...",
@@ -271,7 +266,7 @@ questions = [
         "emoji": "🎨", "text": "나의 소울을 가장 잘 표현하는 컬러는?",
         "options": [
             ("💙 깊고 고요한 오션 블루 계열", "water"),
-            ("💚 편안함และ 치유를 주는 포레스트 그린 계열", "grass"),
+            ("💚 편안함과 치유를 주는 포레스트 그린 계열", "grass"),
             ("❤️ 시선을 사로잡는 뜨거운 레드 계열", "fire"),
             ("💛 어디서나 톡톡 튀는 네온 옐로우 계열", "electric"),
         ]
@@ -315,7 +310,7 @@ questions = [
     {
         "emoji": "🦁", "text": "내가 생각하는 나의 가장 매력적인 무기는?",
         "options": [
-            ("💙 바다 같은 넓은 포용력และ 깊은 감수성", "water"),
+            ("💙 바다 같은 넓은 포용력과 깊은 감수성", "water"),
             ("💚 흔들리지 않는 뚝심과 한결같은 성실함", "grass"),
             ("❤️ 불꽃 같은 추진력과 무한 긍정 에너지", "fire"),
             ("💛 번뜩이는 두뇌 회전과 쾌활한 유머 감각", "electric"),
@@ -366,12 +361,12 @@ results = {
         "text_color": "#0369A1", "card_bg": "#E0F2FE", "border_color": "#0284C7",
         "main_pokemon": "🐳", "anim_class": "water-bubble",
         "traits": [
-            "🌊 어떤 그릇에도 맞춰 변하는 유연하고 포용력 있는 성격입니다.",
-            "💙 타인의 상처를 묵묵히 어루만져 주는 따뜻한 감수성의 소유자입니다.",
-            "💎 겉으로는 고요해 보이지만, 내면에는 아주 깊고 단단한 주관이 서려 있어요.",
-            "🔮 복잡한 상황 속에서도 직관적으로 정답을 부드럽게 찾아냅니다."
+            "어떤 그릇에도 맞춰 변하는 유연하고 포용력 있는 성격입니다.",
+            "타인의 상처를 묵묵히 어루만져 주는 따뜻한 감수성의 소유자입니다.",
+            "겉으로는 고요해 보이지만, 내면에는 아주 깊고 단단한 주관이 서려 있어요.",
+            "복잡한 상황 속에서도 직관적으로 정답을 부드럽게 찾아냅니다."
         ],
-        "compatible": "풀 타입(🌿)과 함께하면 최고의 심리적 안정감을 느껴요!",
+        "compatible": "💕 환상의 케미: 풀 타입(🌿)과 함께하면 최고의 심리적 안정감을 느껴요!",
         "pokemon_examples": "꼬부기, 라프라스, 샤미드", "particles": "🌊💧💙🫧"
     },
     "grass": {
@@ -380,12 +375,12 @@ results = {
         "text_color": "#15803D", "card_bg": "#DCFCE7", "border_color": "#16A34A",
         "main_pokemon": "🌿", "anim_class": "leaf-sway",
         "traits": [
-            "🌱 급하게 서두르지 않고 묵묵히 자신만의 뿌리를 내리는 성실파입니다.",
-            "💚 주변 사람들의 마음을 편안하게 힐링해주는 인간 비타민 같은 존재입니다.",
-            "🌸 갈등을 싫어하며 대가 없는 친절과 조화를 베풀 줄 압니다.",
-            "🍃 인내심이 무척 뛰어나 신뢰감을 주는 든든한 버팀목 역할을 해냅니다."
+            "급하게 서두르지 않고 묵묵히 자신만의 뿌리를 내리는 성실파입니다.",
+            "주변 사람들의 마음을 편안하게 힐링해주는 인간 비타민 같은 존재입니다.",
+            "갈등을 싫어하며 대가 없는 친절과 조화를 베풀 줄 압니다.",
+            "인내심이 무척 뛰어나 신뢰감을 주는 든든한 버팀목 역할을 해냅니다."
         ],
-        "compatible": "물 타입(🌊)과 만나면 서로를 무한히 성장시켜 주는 상생의 관계가 됩니다!",
+        "compatible": "💕 환상의 케미: 물 타입(🌊)과 만나면 서로를 무한히 성장시켜 주는 상생의 관계가 됩니다!",
         "pokemon_examples": "이상해씨, 치코리타, 샤로다", "particles": "🌿🍃🌱💚"
     },
     "fire": {
@@ -394,12 +389,12 @@ results = {
         "text_color": "#B91C1C", "card_bg": "#FEE2E2", "border_color": "#DC2626",
         "main_pokemon": "🔥", "anim_class": "fire-flicker",
         "traits": [
-            "🔥 가슴속에 꺼지지 않는 뜨거운 열정과 에너지를 품고 있습니다.",
-            "💪 실패를 두려워하지 않고 과감하게 도전하는 타고난 개척자입니다.",
-            "❤️ 솔직하고 뒤끝 없는 성격으로 주변의 분위기를 리드하는 대장 부엉이입니다.",
-            "🏆 목표가 생기면 그 누구보다 폭발적인 집중력과 추진력을 발휘합니다."
+            "가슴속에 꺼지지 않는 뜨거운 열정과 에너지를 품고 있습니다.",
+            "실패를 두려워하지 않고 과감하게 도전하는 타고난 개척자입니다.",
+            "솔직하고 뒤끝 없는 성격으로 주변의 분위기를 리드하는 대장 부엉이입니다.",
+            "목표가 생기면 그 누구보다 폭발적인 집중력과 추진력을 발휘합니다."
         ],
-        "compatible": "전기 타입(⚡)과 만나면 멈추지 않는 도파민과 시너지가 폭발합니다!",
+        "compatible": "💕 환상의 케미: 전기 타입(⚡)과 만나면 멈추지 않는 도파민과 시너지가 폭발합니다!",
         "pokemon_examples": "파이리, 리자몽, 윈디", "particles": "🔥💥✨❤️"
     },
     "electric": {
@@ -408,17 +403,17 @@ results = {
         "text_color": "#A16207", "card_bg": "#FEF9C3", "border_color": "#CA8A04",
         "main_pokemon": "⚡", "anim_class": "electric-zap",
         "traits": [
-            "⚡ 스파크가 튀듯 남들이 생각지 못한 기발한 아이디어를 뿜어냅니다.",
-            "💡 지루한 일상을 싫어하며 언제나 새롭고 트렌디한 것에 안테나를 켭니다.",
-            "💛 두뇌 회전과 행동력이 전광석화처럼 빨라 위기 대처 능력이 만렙입니다.",
-            "🌟 특유의 센스와 위트 넘치는 성격으로 모임의 활력소 역할을 톡톡히 합니다."
+            "스파크가 튀듯 남들이 생각지 못한 기발한 아이디어를 뿜어냅니다.",
+            "지루한 일상을 싫어하며 언제나 새롭고 트렌디한 것에 안테나를 켭니다.",
+            "두뇌 회전과 행동력이 전광석화처럼 빨라 위기 대처 능력이 만렙입니다.",
+            "특유의 센스와 위트 넘치는 성격으로 모임의 활력소 역할을 톡톡히 합니다."
         ],
-        "compatible": "불 타입(🔥)과 함께할 때 가장 지루하지 않고 짜릿한 파트너가 됩니다!",
+        "compatible": "💕 환상의 케미: 불 타입(🔥)과 함께할 때 가장 지루하지 않고 짜릿한 파트너가 됩니다!",
         "pokemon_examples": "피카츄, 에레브, 쥬피썬더", "particles": "⚡💡✨💛"
     }
 }
 
-# 5. 세션 상태(Session State) 안정화 초기화
+# 5. 세션 상태 초기화
 if 'page' not in st.session_state:
     st.session_state.page = 'intro'
 if 'current_q' not in st.session_state:
@@ -468,7 +463,7 @@ if st.session_state.page == 'intro':
     _, col_btn, _ = st.columns([0.5, 2, 0.5])
     with col_btn:
         if st.button("✨ 진단 시작하기!", key="start_game"):
-            reset()  # 시작 시 스코어 클린 초기화
+            reset()
             st.session_state.page = 'quiz'
             st.rerun()
 
@@ -479,7 +474,6 @@ elif st.session_state.page == 'quiz':
     total = len(questions)
     progress_pct = int((q_idx / total) * 100)
 
-    # 상단 진행바 마크업
     st.markdown(f"""
     <div style="margin:0.5rem 0;">
         <div style="display:flex;justify-content:space-between;color:#aac4ff;font-weight:700;font-size:1rem;margin-bottom:0.3rem;">
@@ -492,7 +486,6 @@ elif st.session_state.page == 'quiz':
     </div>
     """, unsafe_allow_html=True)
 
-    # 질문 카드 마크업
     st.markdown(f"""
     <div class="q-card">
         <span class="q-emoji">{q['emoji']}</span>
@@ -501,18 +494,16 @@ elif st.session_state.page == 'quiz':
     </div>
     """, unsafe_allow_html=True)
 
-    # 현재 문항의 선택지 무작위 셔플 보존 로직
+    # 셔플 고정
     if q_idx not in st.session_state.shuffled_options:
         st.session_state.shuffled_options[q_idx] = random.sample(q['options'], len(q['options']))
     
     current_options = st.session_state.shuffled_options[q_idx]
 
-    # 매칭 스코어 KeyError를 완전히 없앤 전용 버튼 라우팅 인터페이스
+    # KeyError 완전 해결 로직
     for opt_text, opt_type in current_options:
-        if st.button(opt_text, key=f"btn_q{q_idx}_{opt_text[:10]}"):
-            # 안전하게 세션 스코어 합산 가동
-            st.session_state.scores[opt_type] = st.session_state.scores.get(opt_type, 0) + 1
-            
+        if st.button(opt_text, key=f"btn_{q_idx}_{opt_text[:15]}"):
+            st.session_state.scores[opt_type] += 1
             if q_idx + 1 < total:
                 st.session_state.current_q += 1
                 st.rerun()
@@ -525,7 +516,7 @@ elif st.session_state.page == 'result':
     winner = max(st.session_state.scores, key=st.session_state.scores.get)
     r = results[winner]
 
-    # 배경 테마 동적 주입
+    # 배경 동적 주입
     st.markdown(f"""
     <style>
     .stApp {{
@@ -536,7 +527,7 @@ elif st.session_state.page == 'result':
     </style>
     """, unsafe_allow_html=True)
 
-    # 화면에 부유하는 아이콘 배치 파트
+    # 파티클 데코레이션
     deco_emojis = r['particles']
     deco_html = '<div style="position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;overflow:hidden;z-index:0;">'
     for i in range(12):
@@ -549,41 +540,39 @@ elif st.session_state.page == 'result':
     st.markdown(deco_html, unsafe_allow_html=True)
 
     total_answers = sum(st.session_state.scores.values())
-    if total_answers == 0: total_answers = 1 # 분모 0 방지 방어코드
+    if total_answers == 0: total_answers = 1
     score_pct = int((st.session_state.scores[winner] / total_answers) * 100)
 
-    # 특징 리스트 빌딩
-    traits_html = ""
-    for trait in r['traits']:
-        traits_html += f'<li style="color: #333333 !important; background: rgba(255, 255, 255, 0.6) !important; padding: 0.7rem 1rem; border-radius: 12px; margin-bottom: 0.5rem; font-weight: bold; border: 1px solid rgba(0,0,0,0.05);">{trait}</li>'
-
-    # [마크업 버그 완벽 패치]: f-string 중괄호 충돌을 회피하기 위해 단일 완결된 HTML 블록으로 마크다운에 주입
-    full_result_html = f"""
-    <div class="result-card" style="background: {r['card_bg']} !important; border-color: {r['border_color']} !important;">
-        <div style="font-size:5rem; display:inline-block;" class="{r['anim_class']}">{r['main_pokemon']}</div>
-        <div style="font-size:1rem; letter-spacing:3px; font-weight:800; color: {r['text_color']} !important; margin:0.5rem 0;">당신의 매칭 속성은</div>
-        <div class="result-title" style="color: {r['text_color']} !important; font-family: sans-serif;">{r['name']}</div>
-        <div class="result-subtitle" style="color: {r['text_color']} !important; opacity:0.85;">{r['subtitle']}</div>
-        
-        <div style="background:rgba(0,0,0,0.05); border-radius:50px; padding:0.6rem 1.5rem; margin:1.2rem 0; font-size:1.1rem; font-weight:800; color: {r['text_color']} !important; display:inline-block;">
-            💡 싱크로율 {score_pct}%
-        </div>
-        
-        <ul class="trait-list" style="list-style:none; padding:0; margin:1.5rem 0;">
-            {traits_html}
-        </ul>
-        
-        <div style="background:rgba(255,255,255,0.7); border-radius:16px; padding:1.1rem 1.5rem; margin:1rem 0; text-align:left; border:1px solid rgba(0,0,0,0.06);">
-            <div style="font-weight:800; font-size:1.1rem; color:{r['text_color']} !important; margin-bottom:0.3rem;">🎮 대표적인 파트너 포켓몬</div>
-            <div style="color:#222222 !important; font-size:1rem; font-weight:600;">{r['pokemon_examples']}</div>
-        </div>
-        
-        <div style="background:rgba(255,255,255,0.4); border-radius:16px; padding:0.9rem 1.5rem; margin:0.5rem 0; font-size:1rem; color:{r['text_color']} !important; font-weight:700; border:1px solid rgba(0,0,0,0.04);">
-            {r['compatible']}
-        </div>
+    # [핵심 변경 사항]: f-string 문자열 안에서 중괄호로 인한 깨짐을 방지하기 위해 HTML 구조를 하드코딩식으로 안전하게 분할 렌더링합니다.
+    st.markdown(f'<div class="result-card" style="background: {r["card_bg"]} !important; border-color: {r["border_color"]} !important;">', unsafe_allow_html=True)
+    st.markdown(f'<div style="font-size:5rem; display:inline-block;" class="{r["anim_class"]}">{r["main_pokemon"]}</div>', unsafe_allow_html=True)
+    st.markdown(f'<div style="font-size:1rem; letter-spacing:3px; font-weight:800; color: {r["text_color"]} !important; margin:0.5rem 0;">당신의 매칭 속성은</div>', unsafe_allow_html=True)
+    st.markdown(f'<div class="result-title" style="color: {r["text_color"]} !important;">{r["name"]}</div>', unsafe_allow_html=True)
+    st.markdown(f'<div class="result-subtitle" style="color: {r["text_color"]} !important; opacity:0.85;">{r["subtitle"]}</div>', unsafe_allow_html=True)
+    
+    st.markdown(f"""
+    <div style="background:rgba(0,0,0,0.05); border-radius:50px; padding:0.6rem 1.5rem; margin:1.2rem 0; font-size:1.1rem; font-weight:800; color: {r['text_color']} !important; display:inline-block;">
+        💡 싱크로율 {score_pct}%
     </div>
-    """
-    st.markdown(full_result_html, unsafe_allow_html=True)
+    """, unsafe_allow_html=True)
+
+    # 특징 리스트 출력
+    st.markdown('<ul class="trait-list">', unsafe_allow_html=True)
+    for trait in r['traits']:
+        st.markdown(f'<li>{trait}</li>', unsafe_allow_html=True)
+    st.markdown('</ul>', unsafe_allow_html=True)
+    
+    # 파트너 및 케미
+    st.markdown(f"""
+    <div style="background:rgba(255,255,255,0.7); border-radius:16px; padding:1.1rem 1.5rem; margin:1rem 0; text-align:left; border:1px solid rgba(0,0,0,0.06);">
+        <div style="font-weight:800; font-size:1.1rem; color:{r['text_color']} !important; margin-bottom:0.3rem;">🎮 대표적인 파트너 포켓몬</div>
+        <div style="color:#222222 !important; font-size:1rem; font-weight:600;">{r['pokemon_examples']}</div>
+    </div>
+    <div style="background:rgba(255,255,255,0.4); border-radius:16px; padding:0.9rem 1.5rem; margin:0.5rem 0; font-size:1rem; color:{r['text_color']} !important; font-weight:700; border:1px solid rgba(0,0,0,0.04);">
+        {r['compatible']}
+    </div>
+    """, unsafe_allow_html=True)
+    st.markdown('</div>', unsafe_allow_html=True) # result-card 종료
 
     # 6. 하단 멀티 에너그래프 스코어 보드
     st.markdown("""
@@ -612,7 +601,7 @@ elif st.session_state.page == 'result':
 
     st.markdown("</div>", unsafe_allow_html=True)
 
-    # 리스타트 단독 컴포넌트 분리 배치
+    # 리스타트 버튼
     _, col_reset, _ = st.columns([1, 2, 1])
     with col_reset:
         st.markdown('<div class="restart-btn" style="text-align:center; margin-top:1rem;">', unsafe_allow_html=True)
