@@ -1,6 +1,5 @@
 import streamlit as st
 import random
-import time
 
 # 1. 페이지 기본 설정
 st.set_page_config(
@@ -148,7 +147,7 @@ html, body, [class*="css"] {
     box-shadow: 0 0 10px rgba(102,126,234,0.7);
 }
 
-/* 선택지 버튼 커스텀 (다크/라이트 완벽 방어) */
+/* 선택지 버튼 커스텀 */
 div.stButton > button {
     width: 100%;
     background: rgba(255,255,255,0.08) !important;
@@ -203,7 +202,6 @@ div.stButton > button:hover {
     padding: 0.6rem 1rem;
     font-size: 1.1rem;
     font-weight: bold;
-    background: rgba(255, 255, 255, 0.15);
     margin-bottom: 0.5rem;
     border-radius: 12px;
     display: flex;
@@ -233,21 +231,23 @@ div.stButton > button:hover {
 </style>
 """, unsafe_allow_html=True)
 
-# 3. 배경 별빛 흩뿌리기 (지속 유지)
-stars_html = '<div class="stars-container">'
-random.seed(1337)
-star_chars = ["★", "✦", "✧", "⊹", "✩", "⋆"]
-for _ in range(25):
-    x, y = random.randint(0, 100), random.randint(0, 100)
-    size = random.uniform(0.6, 1.3)
-    dur = random.uniform(2, 5)
-    delay = random.uniform(0, 3)
-    char = random.choice(star_chars)
-    stars_html += f'<div class="star" style="left:{x}%;top:{y}%;font-size:{size}rem;--dur:{dur}s;--delay:{delay}s;">{char}</div>'
-stars_html += '</div>'
-st.markdown(stars_html, unsafe_allow_html=True)
+# 3. 배경 별빛 배치 (렌더링 무작위성 고정)
+if 'stars_html' not in st.session_state:
+    stars = '<div class="stars-container">'
+    star_chars = ["★", "✦", "✧", "⊹", "✩", "⋆"]
+    for _ in range(25):
+        x, y = random.randint(0, 100), random.randint(0, 100)
+        size = random.uniform(0.6, 1.3)
+        dur = random.uniform(2, 5)
+        delay = random.uniform(0, 3)
+        char = random.choice(star_chars)
+        stars += f'<div class="star" style="left:{x}%;top:{y}%;font-size:{size}rem;--dur:{dur}s;--delay:{delay}s;">{char}</div>'
+    stars += '</div>'
+    st.session_state.stars_html = stars
 
-# 4. 12개 질문 데이터 구축 (물, 풀, 불, 전기 균형 매칭)
+st.markdown(st.session_state.stars_html, unsafe_allow_html=True)
+
+# 4. 12개 질문 데이터 구축
 questions = [
     {
         "emoji": "🌅", "text": "주말 오전, 눈을 떴을 때 나는 보통...",
@@ -300,7 +300,7 @@ questions = [
             ("🍣 깔끔하고 정갈하게 입안을 채워주는 맛", "water"),
             ("🥗 몸도 마음도 정화되는 건강하고 깨끗한 맛", "grass"),
             ("🌶️ 땀이 쏙 빠질 만큼 화끈하고 자극적인 맛", "fire"),
-            ("⚡ 간편하고 빠르면서도 트렌디하게 맛있는 최신 디저트/푸드", "electric"),
+            ("⚡ 간편하고 빠르면서도 트렌디하게 맛있는 최신 푸드", "electric"),
         ]
     },
     {
@@ -325,7 +325,7 @@ questions = [
         "emoji": "🎵", "text": "평소 내 플레이리스트를 장악한 장르는?",
         "options": [
             ("🎶 듣기만 해도 몽글몽글해지는 인디, Lo-fi", "water"),
-            ("🌿 마음 안정을 돕는 뉴에이지, 아쿠스틱 팝", "grass"),
+            ("🌿 마음 안정을 돕는 뉴에이지, 어쿠스틱 팝", "grass"),
             ("🔥 텐션을 급상승시키는 댄스, 힙합, 락", "fire"),
             ("⚡ 리드미컬하고 세련된 테크노, EDM, 신스팝", "electric"),
         ]
@@ -352,14 +352,13 @@ questions = [
         "emoji": "🎁", "text": "소중한 사람에게 선물을 줄 때 나의 선택은?",
         "options": [
             ("💌 정성 어린 편지와 마음이 뭉클해지는 선물", "water"),
-            ("🪴 오랫동안 곁에 두고 쓸 수 있는 아늑하고 실용적인 물건", "grass"),
+            ("🪴 오랫동안 곁에 두고 쓸 수 있는 아늑한 물건", "grass"),
             ("🎁 요즘 가장 핫하고 모두가 부러워할 만한 화려한 선물", "fire"),
             ("⚡ 상대방이 깜짝 놀랄 만한 기발하고 스마트한 아이템", "electric"),
         ]
     }
 ]
 
-# 5. 결과 딕셔너리 정보
 results = {
     "water": {
         "name": "물 타입 🌊", "subtitle": "깊고 유연한 바다의 영혼",
@@ -379,7 +378,7 @@ results = {
         "name": "풀 타입 🌿", "subtitle": "치유와 평화를 선사하는 대지의 숲",
         "bg_color": "linear-gradient(135deg, #1b4332 0%, #2d6a4f 50%, #52b788 100%)",
         "text_color": "#15803D", "card_bg": "#DCFCE7", "border_color": "#16A34A",
-        "main_pokemon": "🍁", "anim_class": "leaf-sway",
+        "main_pokemon": "🌿", "anim_class": "leaf-sway",
         "traits": [
             "🌱 급하게 서두르지 않고 묵묵히 자신만의 뿌리를 내리는 성실파입니다.",
             "💚 주변 사람들의 마음을 편안하게 힐링해주는 인간 비타민 같은 존재입니다.",
@@ -390,7 +389,7 @@ results = {
         "pokemon_examples": "이상해씨, 치코리타, 샤로다", "particles": "🌿🍃🌱💚"
     },
     "fire": {
-        "name": "불 타입 🔥", "subtitle": " 세상을 밝히는 찬란한 불꽃",
+        "name": "불 타입 🔥", "subtitle": "세상을 밝히는 찬란한 불꽃",
         "bg_color": "linear-gradient(135deg, #7f1d1d 0%, #dc2626 50%, #f97316 100%)",
         "text_color": "#B91C1C", "card_bg": "#FEE2E2", "border_color": "#DC2626",
         "main_pokemon": "🔥", "anim_class": "fire-flicker",
@@ -419,18 +418,21 @@ results = {
     }
 }
 
-# 6. 세션 상태(Session State) 안정화 초기화
+# 5. 세션 상태(Session State) 안정화 초기화
 if 'page' not in st.session_state:
     st.session_state.page = 'intro'
 if 'current_q' not in st.session_state:
     st.session_state.current_q = 0
 if 'scores' not in st.session_state:
     st.session_state.scores = {"water": 0, "grass": 0, "fire": 0, "electric": 0}
+if 'shuffled_options' not in st.session_state:
+    st.session_state.shuffled_options = {}
 
 def reset():
     st.session_state.page = 'intro'
     st.session_state.current_q = 0
     st.session_state.scores = {"water": 0, "grass": 0, "fire": 0, "electric": 0}
+    st.session_state.shuffled_options = {}
 
 # ---- [PAGE] INTRO ----
 if st.session_state.page == 'intro':
@@ -442,7 +444,6 @@ if st.session_state.page == 'intro':
     </div>
     """, unsafe_allow_html=True)
 
-    # 속성 미리보기 카드 그리드 배치
     st.markdown("""
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin:1.5rem 0;">
         <div style="background:linear-gradient(135deg,#0077b6,#00b4d8);border-radius:20px;padding:1.2rem;text-align:center;animation:float 3s ease-in-out infinite;">
@@ -468,6 +469,7 @@ if st.session_state.page == 'intro':
     with col_btn:
         if st.button("✨ 진단 시작하기!", key="start_game"):
             st.session_state.page = 'quiz'
+            st.session_state.current_q = 0
             st.rerun()
 
 # ---- [PAGE] QUIZ ----
@@ -476,6 +478,12 @@ elif st.session_state.page == 'quiz':
     q = questions[q_idx]
     total = len(questions)
     progress_pct = int((q_idx / total) * 100)
+
+    # 현재 문항의 선택지 셔플 (세션에 보존하여 버튼 클릭 시 리로드되어도 유지되게 고정)
+    if q_idx not in st.session_state.shuffled_options:
+        st.session_state.shuffled_options[q_idx] = random.sample(q['options'], len(q['options']))
+    
+    current_options = st.session_state.shuffled_options[q_idx]
 
     # 상단 진행바 마크업
     st.markdown(f"""
@@ -499,8 +507,8 @@ elif st.session_state.page == 'quiz':
     </div>
     """, unsafe_allow_html=True)
 
-    # 4가지 선택지 즉시 체킹 및 이동
-    for opt_text, opt_type in q['options']:
+    # 무작위로 섞인 4가지 선택지 버튼 생성 및 반영
+    for opt_text, opt_type in current_options:
         if st.button(opt_text, key=f"btn_{q_idx}_{opt_type}"):
             st.session_state.scores[opt_type] += 1
             if q_idx + 1 < total:
@@ -515,7 +523,7 @@ elif st.session_state.page == 'result':
     winner = max(st.session_state.scores, key=st.session_state.scores.get)
     r = results[winner]
 
-    # [중요] 결과 페이지의 성격에 맞게 전체 배경 그라디언트 강제 오버라이딩 애니메이션
+    # 전체 페이지 그라디언트 배경 설정
     st.markdown(f"""
     <style>
     .stApp {{
@@ -526,7 +534,7 @@ elif st.session_state.page == 'result':
     </style>
     """, unsafe_allow_html=True)
 
-    # 결과 전용 흩날리는 테마 아이콘 배경 생성
+    # 흩날리는 테마 아이콘 배경 구조 생성
     deco_emojis = r['particles']
     deco_html = '<div style="position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;overflow:hidden;z-index:0;">'
     for i in range(15):
@@ -538,12 +546,16 @@ elif st.session_state.page == 'result':
     deco_html += '</div>'
     st.markdown(deco_html, unsafe_allow_html=True)
 
-    # 스코어 백분율 산출
     total_answers = sum(st.session_state.scores.values())
     score_pct = int((st.session_state.scores[winner] / total_answers) * 100)
 
-    # 속성 맞춤 커스텀 결과 카드 (글자 색상 및 배경 오버라이드 고정)
-    st.markdown(f"""
+    # 특징 리스트들의 HTML 요소 문자열 빌드
+    traits_html = ""
+    for trait in r['traits']:
+        traits_html += f'<li style="color: #333333 !important; background: rgba(255,255,255,0.5) !important; border: 1px solid {r["border_color"]}33;">{trait}</li>'
+
+    # [핵심 수정한 부분]: 단 하나의 닫히는 마크업 블록 구조로 가두어 완벽히 출력 렌더링
+    full_result_html = f"""
     <div class="result-card" style="background: {r['card_bg']} !important; border-color: {r['border_color']} !important;">
         <div style="font-size:5rem; display:inline-block;" class="{r['anim_class']}">{r['main_pokemon']}</div>
         <div style="font-size:1rem; letter-spacing:3px; font-weight:800; color: {r['text_color']} !important; text-transform:uppercase; margin:0.5rem 0;">당신의 매칭 속성은</div>
@@ -555,15 +567,7 @@ elif st.session_state.page == 'result':
         </div>
         
         <ul class="trait-list">
-    """, unsafe_allow_html=True)
-
-    # 특징 리스트 출력 생성 (어두운 글자색 반영)
-    traits_html = ""
-    for trait in r['traits']:
-        traits_html += f'<li style="color: #333333 !important; background: rgba(255,255,255,0.5) !important; border: 1px solid {r['border_color']}33;">{trait}</li>'
-    st.markdown(traits_html, unsafe_allow_html=True)
-
-    st.markdown(f"""
+            {traits_html}
         </ul>
         
         <div style="background:rgba(255,255,255,0.6); border-radius:16px; padding:1rem 1.5rem; margin:1rem 0; text-align:left; border:1px solid {r['border_color']}44;">
@@ -575,9 +579,10 @@ elif st.session_state.page == 'result':
             💕 환상의 케미: {r['compatible']}
         </div>
     </div>
-    """, unsafe_allow_html=True)
+    """
+    st.markdown(full_result_html, unsafe_allow_html=True)
 
-    # 아래쪽 종합 속성별 분석 그래프 아코디언/카드 배치
+    # 아래쪽 종합 속성별 분석 그래프 보드 배치
     st.markdown("""
     <div style="background:rgba(0,0,0,0.4); border-radius:24px; padding:1.5rem; margin:1.5rem 0; backdrop-filter:blur(10px); border: 1px solid rgba(255,255,255,0.1);">
         <div style="font-size:1.2rem; font-weight:800; margin-bottom:1.2rem; text-align:center; color:#fff;">📊 내 속성 멀티 에너그래프</div>
