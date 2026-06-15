@@ -4,6 +4,12 @@ import time
 # 1. 페이지 기본 설정 및 귀여운 애니메이션 CSS 주입
 st.set_page_config(page_title="포켓몬 속성 진단 테스트", page_icon="⚡", layout="centered")
 
+# 세션 상태가 리로드 시 초기화되거나 씹히는 걸 방지하기 위해 코드 최상단에서 확실히 선언
+if 'step' not in st.session_state:
+    st.session_state.step = 0
+if 'scores' not in st.session_state:
+    st.session_state.scores = {"물": 0, "풀": 0, "불": 0, "전기": 0}
+
 st.markdown("""
     <style>
     /* 전체 폰트 및 배경 애니메이션 */
@@ -34,15 +40,16 @@ st.markdown("""
         padding: 20px;
     }
     
-    /* 심플하고 귀여운 버튼 스타일링 */
+    /* 다크모드/라이트모드 모두 대응하는 귀여운 버튼 스타일링 */
     div.stButton > button {
         width: 100%;
         border-radius: 20px;
-        border: 3px solid #333333;
+        border: 3px solid #333333 !important;
         padding: 15px;
         font-size: 18px !important;
-        font-weight: bold;
-        background-color: #ffffff;
+        font-weight: bold !important;
+        background-color: #ffffff !important;
+        color: #333333 !important; /* 글자색을 어두운 톤으로 강제 고정 */
         transition: all 0.2s ease-in-out;
         box-shadow: 0px 5px 0px #333333;
         margin-bottom: 10px;
@@ -50,6 +57,7 @@ st.markdown("""
     div.stButton > button:hover {
         transform: translateY(3px);
         box-shadow: 0px 2px 0px #333333;
+        background-color: #f0f0f0 !important;
     }
     
     /* 결과 페이지 카드 디자인 애니메이션 */
@@ -69,7 +77,7 @@ st.markdown("""
         animation: pulse 1.5s infinite;
     }
     </style>
-""", unsafe_allow_html=True) # <- 이 부분의 오타를 수정했습니다!
+""", unsafe_allow_html=True)
 
 # 2. 질문 데이터셋 (12개 문항)
 questions = [
@@ -183,12 +191,6 @@ questions = [
     }
 ]
 
-# Session State 초기화
-if 'step' not in st.session_state:
-    st.session_state.step = 0
-if 'scores' not in st.session_state:
-    st.session_state.scores = {"물": 0, "풀": 0, "불": 0, "전기": 0}
-
 # 3. 앱 화면 구성
 if st.session_state.step == 0:
     st.markdown('<div class="title-box"><h1>✨ 나의 포켓몬 속성 진단 ✨</h1><p>12개의 질문으로 알아보는 나의 숨겨진 타입!</p></div>', unsafe_allow_html=True)
@@ -206,9 +208,13 @@ elif 1 <= st.session_state.step <= 12:
     st.write(f"**Q{st.session_state.step}. {q_data['q']}**")
     st.write("")
     
+    # 세션 딕셔너리가 혹시라도 비어있을 때를 대비한 안전 장치 안전하게 병합
+    if "scores" not in st.session_state or not st.session_state.scores:
+        st.session_state.scores = {"물": 0, "풀": 0, "불": 0, "전기": 0}
+        
     for option_text, type_attr in q_data['options']:
         if st.button(option_text, key=f"q_{st.session_state.step}_{type_attr}"):
-            st.session_state.scores[type_attr] += 1
+            st.session_state.scores[type_attr] = st.session_state.scores.get(type_attr, 0) + 1
             st.session_state.step += 1
             st.rerun()
 
@@ -244,11 +250,11 @@ else:
     style = type_styles[final_type]
     
     st.markdown(f"""
-        <div class="result-card" style="background-color: {style['bg']}; border-color: {style['border']}; color: {style['text']};">
+        <div class="result-card" style="background-color: {style['bg']}; border-color: {style['border']}; color: {style['text']} !important;">
             <h1 style="font-size: 80px; margin: 0; animation: float 2.5s infinite;">{style['emoji']}</h1>
-            <h2 style="margin-top: 10px;">{style['title']}</h2>
+            <h2 style="margin-top: 10px; color: {style['text']} !important;">{style['title']}</h2>
             <hr style="border-top: 2px dashed {style['border']};">
-            <p style="font-size: 20px; line-height: 1.6; font-weight: bold;">{style['desc']}</p>
+            <p style="font-size: 20px; line-height: 1.6; font-weight: bold; color: {style['text']} !important;">{style['desc']}</p>
         </div>
     """, unsafe_allow_html=True)
     
