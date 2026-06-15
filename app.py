@@ -1,739 +1,272 @@
 import streamlit as st
+import time
 
-st.set_page_config(
-    page_title="포켓몬 속성 심리테스트 ✨",
-    page_icon="🌟",
-    layout="centered"
-)
+# 1. 페이지 기본 설정 및 귀여운 애니메이션 CSS 주입
+st.set_page_config(page_title="포켓몬 속성 진단 테스트", page_icon="⚡", layout="centered")
 
-# Global CSS & animations
 st.markdown("""
-<style>
-@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap');
+    <style>
+    /* 전체 폰트 및 배경 애니메이션 */
+    @import url('https://fonts.googleapis.com/css2?family=Gamja+Flower&display=swap');
+    
+    html, body, [data-testid="stAppViewContainer"] {
+        font-family: 'Gamja+Flower', cursive;
+        font-size: 20px;
+    }
+    
+    /* 둥둥 떠다니는 귀여운 애니메이션 효과 */
+    @keyframes float {
+        0% { transform: translateY(0px); }
+        50% { transform: translateY(-10px); }
+        100% { transform: translateY(0px); }
+    }
+    
+    /* 반짝이는 애니메이션 효과 */
+    @keyframes pulse {
+        0% { opacity: 0.6; }
+        50% { opacity: 1; }
+        100% { opacity: 0.6; }
+    }
+    
+    .title-box {
+        text-align: center;
+        animation: float 3s ease-in-out infinite;
+        padding: 20px;
+    }
+    
+    /* 심플하고 귀여운 버튼 스타일링 */
+    div.stButton > button {
+        width: 100%;
+        border-radius: 20px;
+        border: 3px solid #333333;
+        padding: 15px;
+        font-size: 18px !important;
+        font-weight: bold;
+        background-color: #ffffff;
+        transition: all 0.2s ease-in-out;
+        box-shadow: 0px 5px 0px #333333;
+        margin-bottom: 10px;
+    }
+    div.stButton > button:hover {
+        transform: translateY(3px);
+        box-shadow: 0px 2px 0px #333333;
+    }
+    
+    /* 결과 페이지 카드 디자인 애니메이션 */
+    .result-card {
+        padding: 30px;
+        border-radius: 30px;
+        border: 4px solid #333333;
+        text-align: center;
+        box-shadow: 0px 10px 0px #333333;
+        animation: float 4s ease-in-out infinite;
+        margin-top: 20px;
+    }
+    
+    .loading-text {
+        text-align: center;
+        font-size: 24px;
+        animation: pulse 1.5s infinite;
+    }
+    </style>
+""", unsafe_unsafe_allow_html=True)
 
-* { font-family: 'Nunito', sans-serif; }
-
-html, body, [class*="css"] {
-    background: #1a1a2e;
-    color: #fff;
-}
-
-.stApp {
-    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
-    min-height: 100vh;
-}
-
-/* Hide streamlit elements */
-#MainMenu, footer, header { visibility: hidden; }
-.block-container { padding-top: 1rem; }
-
-/* Floating stars background */
-@keyframes twinkle {
-    0%, 100% { opacity: 0.2; transform: scale(1); }
-    50% { opacity: 1; transform: scale(1.3); }
-}
-@keyframes float {
-    0%, 100% { transform: translateY(0px); }
-    50% { transform: translateY(-15px); }
-}
-@keyframes spin {
-    from { transform: rotate(0deg); }
-    to { transform: rotate(360deg); }
-}
-@keyframes pulse {
-    0%, 100% { transform: scale(1); box-shadow: 0 0 20px currentColor; }
-    50% { transform: scale(1.05); box-shadow: 0 0 40px currentColor; }
-}
-@keyframes slideIn {
-    from { opacity: 0; transform: translateY(30px); }
-    to { opacity: 1; transform: translateY(0); }
-}
-@keyframes shimmer {
-    0% { background-position: -200% center; }
-    100% { background-position: 200% center; }
-}
-@keyframes bounce {
-    0%, 100% { transform: translateY(0); }
-    25% { transform: translateY(-10px); }
-    75% { transform: translateY(-5px); }
-}
-@keyframes waterWave {
-    0% { transform: translateX(0) scaleY(1); }
-    50% { transform: translateX(-10px) scaleY(1.1); }
-    100% { transform: translateX(0) scaleY(1); }
-}
-@keyframes fireFlicker {
-    0%, 100% { transform: scale(1) rotate(-2deg); filter: brightness(1); }
-    25% { transform: scale(1.1) rotate(2deg); filter: brightness(1.3); }
-    75% { transform: scale(0.95) rotate(-1deg); filter: brightness(0.9); }
-}
-@keyframes leafSway {
-    0%, 100% { transform: rotate(-5deg); }
-    50% { transform: rotate(5deg); }
-}
-@keyframes electricZap {
-    0%, 100% { opacity: 1; transform: skewX(0deg); }
-    10% { opacity: 0.7; transform: skewX(-3deg); }
-    20% { opacity: 1; transform: skewX(3deg); }
-    30% { opacity: 0.8; transform: skewX(-2deg); }
-    40% { opacity: 1; transform: skewX(0deg); }
-}
-@keyframes particleFly {
-    0% { transform: translate(0, 0) scale(1); opacity: 1; }
-    100% { transform: translate(var(--tx), var(--ty)) scale(0); opacity: 0; }
-}
-@keyframes orbitRing {
-    from { transform: rotate(0deg) translateX(60px) rotate(0deg); }
-    to { transform: rotate(360deg) translateX(60px) rotate(-360deg); }
-}
-
-.hero-section {
-    text-align: center;
-    padding: 2rem 1rem;
-    animation: slideIn 0.8s ease-out;
-}
-.hero-title {
-    font-size: 2.8rem;
-    font-weight: 900;
-    background: linear-gradient(90deg, #ff6b6b, #ffd700, #4ecdc4, #95e17d, #667eea);
-    background-size: 300% auto;
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-    animation: shimmer 3s linear infinite;
-    margin-bottom: 0.5rem;
-    line-height: 1.2;
-}
-.hero-sub {
-    font-size: 1.1rem;
-    color: #aac4ff;
-    margin-bottom: 1.5rem;
-}
-.pokeball-anim {
-    font-size: 4rem;
-    display: inline-block;
-    animation: bounce 1.5s ease-in-out infinite;
-    cursor: pointer;
-}
-.stars-container {
-    position: fixed;
-    top: 0; left: 0;
-    width: 100%; height: 100%;
-    pointer-events: none;
-    z-index: 0;
-    overflow: hidden;
-}
-.star {
-    position: absolute;
-    color: #fff;
-    animation: twinkle var(--dur) ease-in-out infinite var(--delay);
-}
-
-/* Question card */
-.q-card {
-    background: rgba(255,255,255,0.07);
-    border: 1px solid rgba(255,255,255,0.15);
-    border-radius: 24px;
-    padding: 2rem;
-    margin: 1rem 0;
-    backdrop-filter: blur(10px);
-    animation: slideIn 0.5s ease-out;
-    box-shadow: 0 8px 32px rgba(0,0,0,0.3);
-}
-.q-number {
-    font-size: 0.85rem;
-    color: #aac4ff;
-    font-weight: 700;
-    letter-spacing: 2px;
-    text-transform: uppercase;
-    margin-bottom: 0.5rem;
-}
-.q-text {
-    font-size: 1.4rem;
-    font-weight: 800;
-    color: #fff;
-    margin-bottom: 1.5rem;
-    line-height: 1.4;
-}
-.q-emoji {
-    font-size: 2.5rem;
-    margin-bottom: 1rem;
-    display: block;
-    animation: float 3s ease-in-out infinite;
-}
-
-/* Progress bar */
-.progress-container {
-    background: rgba(255,255,255,0.1);
-    border-radius: 20px;
-    height: 10px;
-    margin: 1rem 0;
-    overflow: hidden;
-}
-.progress-fill {
-    height: 100%;
-    border-radius: 20px;
-    background: linear-gradient(90deg, #667eea, #764ba2);
-    transition: width 0.5s ease;
-    box-shadow: 0 0 10px rgba(102,126,234,0.7);
-}
-
-/* Option buttons */
-.stButton > button {
-    width: 100%;
-    background: rgba(255,255,255,0.08) !important;
-    border: 2px solid rgba(255,255,255,0.2) !important;
-    border-radius: 16px !important;
-    color: #fff !important;
-    font-family: 'Nunito', sans-serif !important;
-    font-size: 1rem !important;
-    font-weight: 700 !important;
-    padding: 0.8rem 1.2rem !important;
-    transition: all 0.3s ease !important;
-    text-align: left !important;
-    margin-bottom: 0.5rem !important;
-    backdrop-filter: blur(5px) !important;
-}
-.stButton > button:hover {
-    background: rgba(255,255,255,0.2) !important;
-    border-color: rgba(255,255,255,0.5) !important;
-    transform: translateY(-2px) !important;
-    box-shadow: 0 8px 20px rgba(0,0,0,0.3) !important;
-}
-
-/* Result pages */
-.result-water {
-    background: linear-gradient(135deg, #0077b6, #00b4d8, #90e0ef, #caf0f8) !important;
-}
-.result-grass {
-    background: linear-gradient(135deg, #1b4332, #2d6a4f, #52b788, #95d5b2) !important;
-}
-.result-fire {
-    background: linear-gradient(135deg, #7f1d1d, #dc2626, #f97316, #fbbf24) !important;
-}
-.result-electric {
-    background: linear-gradient(135deg, #713f12, #ca8a04, #eab308, #fef08a) !important;
-}
-
-.result-card {
-    border-radius: 32px;
-    padding: 3rem 2rem;
-    text-align: center;
-    animation: slideIn 0.8s ease-out;
-    position: relative;
-    overflow: hidden;
-}
-.result-title {
-    font-size: 3rem;
-    font-weight: 900;
-    color: #fff;
-    text-shadow: 0 2px 20px rgba(0,0,0,0.3);
-    margin-bottom: 0.5rem;
-}
-.result-subtitle {
-    font-size: 1.3rem;
-    color: rgba(255,255,255,0.9);
-    margin-bottom: 1rem;
-    font-weight: 700;
-}
-.result-emoji-big {
-    font-size: 5rem;
-    display: block;
-    margin: 1rem 0;
-}
-.trait-list {
-    text-align: left;
-    margin: 1.5rem 0;
-    padding: 0;
-    list-style: none;
-}
-.trait-list li {
-    padding: 0.5rem 0;
-    font-size: 1.05rem;
-    color: rgba(255,255,255,0.95);
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-}
-
-/* Water animations */
-@keyframes waveBG {
-    0% { background-position: 0% 50%; }
-    50% { background-position: 100% 50%; }
-    100% { background-position: 0% 50%; }
-}
-.water-bubble {
-    display: inline-block;
-    animation: float var(--dur) ease-in-out infinite var(--delay);
-}
-.fire-flicker {
-    display: inline-block;
-    animation: fireFlicker 0.8s ease-in-out infinite;
-}
-.leaf-sway {
-    display: inline-block;
-    animation: leafSway 2s ease-in-out infinite;
-}
-.electric-zap {
-    display: inline-block;
-    animation: electricZap 1.5s ease-in-out infinite;
-}
-
-/* Decorative circles on result card */
-.deco-circle {
-    position: absolute;
-    border-radius: 50%;
-    opacity: 0.15;
-    animation: spin var(--dur) linear infinite;
-}
-
-.restart-btn > button {
-    background: rgba(255,255,255,0.25) !important;
-    border: 2px solid rgba(255,255,255,0.6) !important;
-    border-radius: 50px !important;
-    font-size: 1.1rem !important;
-    padding: 0.8rem 2.5rem !important;
-}
-.restart-btn > button:hover {
-    background: rgba(255,255,255,0.4) !important;
-}
-
-/* Pokemon silhouette */
-.pokemon-silhouette {
-    font-size: 6rem;
-    filter: drop-shadow(0 0 20px rgba(255,255,255,0.5));
-    display: inline-block;
-}
-.water-pokemon { animation: waterWave 2s ease-in-out infinite; }
-.fire-pokemon { animation: fireFlicker 0.8s ease-in-out infinite; }
-.grass-pokemon { animation: leafSway 2s ease-in-out infinite; }
-.electric-pokemon { animation: electricZap 1.5s ease-in-out infinite; }
-
-/* Particle effects */
-.particles-container {
-    position: absolute;
-    top: 0; left: 0;
-    width: 100%; height: 100%;
-    pointer-events: none;
-    overflow: hidden;
-}
-.particle {
-    position: absolute;
-    border-radius: 50%;
-    animation: particleFly 3s ease-out infinite var(--delay);
-}
-</style>
-""", unsafe_allow_html=True)
-
-# Floating stars
-stars_html = '<div class="stars-container">'
-import random
-random.seed(42)
-star_chars = ["★", "✦", "✧", "⊹", "✩", "⋆"]
-for i in range(25):
-    x = random.randint(0, 100)
-    y = random.randint(0, 100)
-    size = random.uniform(0.7, 1.5)
-    dur = random.uniform(2, 5)
-    delay = random.uniform(0, 3)
-    char = random.choice(star_chars)
-    stars_html += f'<div class="star" style="left:{x}%;top:{y}%;font-size:{size}rem;--dur:{dur}s;--delay:{delay}s;">{char}</div>'
-stars_html += '</div>'
-st.markdown(stars_html, unsafe_allow_html=True)
-
-# Questions
+# 2. 질문 데이터셋 (12개 문항, 각 선택지는 물, 풀, 불, 전기 순서)
 questions = [
     {
-        "emoji": "🌅",
-        "text": "주말 오전, 나는 보통...",
+        "q": "주말이 찾아왔을 때, 당신이 가장 하고 싶은 것은?",
         "options": [
-            ("☕ 조용히 커피 한잔 하며 책을 읽어요", "water"),
-            ("🌿 가벼운 산책이나 피크닉을 즐겨요", "grass"),
-            ("🎉 친구들과 신나는 약속을 잡아요", "fire"),
-            ("💡 새로운 프로젝트 아이디어를 구상해요", "electric"),
+            ("🌊 조용히 혼자 목욕을 하거나 강가를 산책한다", "물"),
+            ("🌱 햇살을 받으며 공원이나 숲길을 걷는다", "풀"),
+            ("🔥 친구들을 모아 핫하고 시끌벅적한 곳으로 간다", "불"),
+            ("⚡ 밀린 게임을 하거나 테마파크로 짜릿하게 놀러 간다", "전기")
         ]
     },
     {
-        "emoji": "💭",
-        "text": "친구가 고민을 털어놓을 때, 나는...",
+        "q": "친구가 속상한 일로 울고 있다면 당신의 반응은?",
         "options": [
-            ("🤗 말없이 옆에서 들어주며 공감해줘요", "water"),
-            ("🌱 천천히 해결책을 함께 찾아줘요", "grass"),
-            ("🔥 열정적으로 조언하고 함께 행동해요", "fire"),
-            ("⚡ 빠르게 핵심을 파악하고 해결책을 제시해요", "electric"),
+            ("🌊 말없이 곁에서 눈물을 닦아주며 다독인다", "물"),
+            ("🌱 이야기를 가만히 들어주며 따뜻한 차를 타준다", "풀"),
+            ("🔥 화를 내며 '누구야? 내가 혼내줄게!'라며 같이 흥분한다", "불"),
+            ("⚡ 기분 전환용 재미있는 밈을 보여주거나 맛있는 걸 사준다", "전기")
         ]
     },
     {
-        "emoji": "🎨",
-        "text": "나에게 가장 잘 어울리는 색깔은?",
+        "q": "새로운 취미를 시작할 때 당신의 스타일은?",
         "options": [
-            ("💙 깊고 차분한 블루 계열이요", "water"),
-            ("💚 싱그럽고 자연스러운 그린 계열이요", "grass"),
-            ("❤️ 강렬하고 열정적인 레드/오렌지요", "fire"),
-            ("💛 밝고 생기넘치는 옐로우 계열이요", "electric"),
+            ("🌊 물 흐르듯 자연스럽게 스며드는 취미", "물"),
+            ("🌱 식물 키우기, 요가 등 마음이 편해지는 취미", "풀"),
+            ("🔥 격렬한 운동이나 열정을 불태울 수 있는 취미", "불"),
+            ("⚡ EDM 작곡, 드론 조종 등 트렌디하고 짜릿한 취미", "전기")
         ]
     },
     {
-        "emoji": "🏖️",
-        "text": "이상적인 여행지는?",
+        "q": "조별 과제를 할 때 당신의 역할은?",
         "options": [
-            ("🌊 파도 소리 들리는 조용한 해변", "water"),
-            ("🏕️ 공기 맑은 숲 속 캠핑장", "grass"),
-            ("🗺️ 활기찬 도시, 새로운 문화 탐험", "fire"),
-            ("🌃 네온사인 반짝이는 야경 도시", "electric"),
+            ("🌊 묵묵히 자료를 조사하고 뒤에서 받쳐주는 역할", "물"),
+            ("🌱 갈등을 중재하고 팀원들의 멘탈을 케어하는 역할", "풀"),
+            ("🔥 앞장서서 발표를 맡고 분위기를 주도하는 리더 역할", "불"),
+            ("⚡ 반짝이는 아이디어를 뿜어내며 PPT를 화려하게 만드는 역할", "전기")
         ]
     },
     {
-        "emoji": "😤",
-        "text": "스트레스를 받을 때 나는...",
+        "q": "화가 났을 때 당신의 모습은?",
         "options": [
-            ("🛁 목욕이나 명상으로 마음을 비워요", "water"),
-            ("🌿 자연 속에서 혼자만의 시간을 가져요", "grass"),
-            ("🏃 운동하거나 친구를 만나 발산해요", "fire"),
-            ("🎮 게임이나 문제 풀기로 집중해요", "electric"),
+            ("🌊 차갑게 가라앉으며 말문을 닫아버린다", "물"),
+            ("🌱 웬만하면 참고 넘어가지만 한 번 터지면 무섭다", "풀"),
+            ("🔥 그 자리에서 불같이 화를 내고 금방 풀린다", "불"),
+            ("⚡ 짜증이 스파크처럼 튀고 이리저리 안절부절못한다", "전기")
         ]
     },
     {
-        "emoji": "🍽️",
-        "text": "내가 좋아하는 음식 스타일은?",
+        "q": "미래의 내 집을 꾸민다면 어떤 느낌으로?",
         "options": [
-            ("🍣 신선하고 담백한 해산물 요리", "water"),
-            ("🥗 건강하고 자연적인 샐러드/채소", "grass"),
-            ("🌶️ 맵고 강렬한 풍미의 요리", "fire"),
-            ("⚡ 빠르게 먹을 수 있는 간편식", "electric"),
+            ("🌊 통창 너머로 바다가 보이는 미니멀한 블루 하우스", "물"),
+            ("🌱 베란다 가득 화분이 있고 우드톤의 아늑한 그린 하우스", "풀"),
+            ("🔥 화려한 조명과 벽난로가 있는 힙한 레드 하우스", "불"),
+            ("⚡ 최신 가전제품과 스마트 홈 시스템이 완비된 옐로우 하우스", "전기")
         ]
     },
     {
-        "emoji": "🌙",
-        "text": "밤에 잠들기 전 나는...",
+        "q": "여행 계획을 세울 때 당신은?",
         "options": [
-            ("📖 잔잔한 음악 들으며 독서해요", "water"),
-            ("🌿 내일 할 일을 차분하게 계획해요", "grass"),
-            ("📱 SNS나 유튜브를 신나게 봐요", "fire"),
-            ("💡 번뜩이는 아이디어를 메모해요", "electric"),
+            ("🌊 목적지만 정하고 발길 닿는 대로 유유자적 떠난다", "물"),
+            ("🌱 힐링 스팟 위주로 여유롭게 일정을 짠다", "풀"),
+            ("🔥 1분 1초도 쉬지 않는 열정 가득한 액티비티 투어", "불"),
+            ("⚡ SNS에서 가장 핫하고 짜릿한 맛집과 명소 정복", "전기")
         ]
     },
     {
-        "emoji": "🦁",
-        "text": "나의 가장 큰 강점은?",
+        "q": "당신이 가장 좋아하는 계절은?",
         "options": [
-            ("💙 깊은 공감 능력과 감수성", "water"),
-            ("💚 꾸준함과 안정감", "grass"),
-            ("❤️ 뜨거운 열정과 추진력", "fire"),
-            ("💛 빠른 두뇌와 호기심", "electric"),
+            ("🌊 시원한 바다를 즐길 수 있는 여름", "물"),
+            ("🌱 새싹이 돋아나고 포근한 봄", "풀"),
+            ("🔥 단풍이 붉게 물들고 감성 있는 가을", "불"),
+            ("⚡ 눈이 내리고 짜릿한 스포츠를 즐기는 겨울", "전기")
         ]
     },
     {
-        "emoji": "🎵",
-        "text": "내가 자주 듣는 음악 장르는?",
+        "q": "낯선 사람 가득한 파티에 초대받았다면?",
         "options": [
-            ("🎶 잔잔한 Lo-fi나 재즈", "water"),
-            ("🌿 어쿠스틱이나 인디 팝", "grass"),
-            ("🔥 신나는 팝, 힙합, EDM", "fire"),
-            ("⚡ 일렉트로닉이나 실험적 음악", "electric"),
+            ("🌊 구석에서 친한 사람 한두 명과 조용히 대화한다", "물"),
+            ("🌱 따뜻한 미소로 인사를 건네며 들어준다", "풀"),
+            ("🔥 파티 분위기를 하이텐션으로 만들며 주인공이 된다", "불"),
+            ("⚡ 이곳저곳 빠르게 돌아다니며 명함을 주고받는다", "전기")
         ]
     },
     {
-        "emoji": "🌟",
-        "text": "나에게 가장 중요한 가치는?",
+        "q": "시험 전날, 당신의 행동은?",
         "options": [
-            ("💙 마음의 평화와 진정한 연결", "water"),
-            ("💚 자연과 조화, 지속 가능한 삶", "grass"),
-            ("❤️ 도전과 열정, 변화를 만드는 삶", "fire"),
-            ("💛 지식과 혁신, 세상을 놀라게 하는 삶", "electric"),
+            ("🌊 '어떻게든 되겠지' 하며 평정심을 유지한다", "물"),
+            ("🌱 미리 해둔 필기를 차분히 복습하며 마음을 가다듬는다", "풀"),
+            ("🔥 밤을 새우며 초집중 모드로 에너지를 불태운다", "불"),
+            ("⚡ 벼락치기로 핵심만 빠르게 스캔하며 스릴을 즐긴다", "전기")
         ]
     },
+    {
+        "q": "길을 가다 예쁜 유기동물을 발견했다면?",
+        "options": [
+            ("🌊 안타까운 눈빛으로 바라보며 조용히 신고 기관을 찾는다", "물"),
+            ("🌱 부드럽게 다가가 다친 곳은 없는지 살핀다", "풀"),
+            ("🔥 '헉 너무 귀여워!' 소리 지르며 당장 간식을 사 온다", "불"),
+            ("⚡ 일단 사진이나 영상을 찍어 커뮤니티에 도움을 요청한다", "전기")
+        ]
+    },
+    {
+        "q": "당신의 좌우명과 가장 가까운 것은?",
+        "options": [
+            ("🌊 유수연화 (물처럼 자연스럽고 유연하게 살자)", "물"),
+            ("🌱 대기만성 (뿌리를 깊게 내리고 차분히 성장하자)", "풀"),
+            ("🔥 화력전개 (한 번 사는 인생, 뜨겁게 불태우자)", "불"),
+            ("⚡ 전광석화 (인생은 타이밍, 빠르게 행동하자)", "전기")
+        ]
+    }
 ]
 
-results = {
-    "water": {
-        "name": "물 타입 🌊",
-        "subtitle": "깊고 투명한 바다처럼",
-        "color_class": "result-water",
-        "bg_color": "linear-gradient(135deg, #0077b6, #00b4d8, #90e0ef)",
-        "text_color": "#ffffff",
-        "pokemon": ["🐬", "💧", "🐋", "🦈", "🐙"],
-        "main_pokemon": "🐳",
-        "pokemon_class": "water-pokemon",
-        "traits": [
-            "💙 깊은 공감 능력을 가진 따뜻한 사람이에요",
-            "🌊 감수성이 풍부하고 섬세한 감정의 소유자",
-            "💎 신뢰할 수 있고 진실된 관계를 소중히 여겨요",
-            "🔮 직관이 뛰어나고 상황을 잘 파악해요",
-            "💙 조용하지만 강인한 내면의 힘이 있어요",
-        ],
-        "compatible": "풀 타입과 잘 맞아요 🌿",
-        "pokemon_examples": "잠만보, 갸라도스, 물범이",
-        "particles": "💧🌊💙🫧",
-        "anim_class": "water-bubble",
-        "particle_color": "#00b4d8",
-    },
-    "grass": {
-        "name": "풀 타입 🌿",
-        "subtitle": "싱그러운 자연처럼",
-        "color_class": "result-grass",
-        "bg_color": "linear-gradient(135deg, #1b4332, #2d6a4f, #52b788, #95d5b2)",
-        "text_color": "#ffffff",
-        "pokemon": ["🌱", "🍃", "🌸", "🌻", "🍀"],
-        "main_pokemon": "🌿",
-        "pokemon_class": "grass-pokemon",
-        "traits": [
-            "🌿 차분하고 꾸준한 성격의 소유자예요",
-            "🌸 자연과 환경을 사랑하는 마음이 커요",
-            "💚 모두를 포용하는 넉넉한 마음을 가졌어요",
-            "🍃 인내심이 강하고 성실하게 목표를 이뤄요",
-            "🌱 주변 사람들에게 힘이 되어주는 존재예요",
-        ],
-        "compatible": "물 타입과 잘 맞아요 💙",
-        "pokemon_examples": "이상해씨, 치코리타, 나뭇짱",
-        "particles": "🌿🍃🌱💚",
-        "anim_class": "leaf-sway",
-        "particle_color": "#52b788",
-    },
-    "fire": {
-        "name": "불 타입 🔥",
-        "subtitle": "뜨겁게 타오르는 불꽃처럼",
-        "color_class": "result-fire",
-        "bg_color": "linear-gradient(135deg, #7f1d1d, #dc2626, #f97316, #fbbf24)",
-        "text_color": "#ffffff",
-        "pokemon": ["🔥", "⚡", "💥", "🌟", "✨"],
-        "main_pokemon": "🔥",
-        "pokemon_class": "fire-pokemon",
-        "traits": [
-            "🔥 넘치는 열정과 에너지를 가졌어요",
-            "💪 어떤 도전도 두려워하지 않는 용기의 소유자",
-            "❤️ 리더십이 강하고 사람들을 이끄는 힘이 있어요",
-            "🌟 주변 사람들에게 활력과 긍정을 전파해요",
-            "🏆 목표를 향해 끝없이 돌진하는 불굴의 의지",
-        ],
-        "compatible": "전기 타입과 잘 맞아요 ⚡",
-        "pokemon_examples": "파이리, 마그마, 부스터",
-        "particles": "🔥💥✨❤️",
-        "anim_class": "fire-flicker",
-        "particle_color": "#f97316",
-    },
-    "electric": {
-        "name": "전기 타입 ⚡",
-        "subtitle": "번개처럼 빠르고 밝게",
-        "color_class": "result-electric",
-        "bg_color": "linear-gradient(135deg, #713f12, #ca8a04, #eab308, #fef08a)",
-        "text_color": "#1a1a00",
-        "pokemon": ["⚡", "💡", "✨", "🌟", "💛"],
-        "main_pokemon": "⚡",
-        "pokemon_class": "electric-pokemon",
-        "traits": [
-            "⚡ 빠른 두뇌 회전으로 문제를 척척 해결해요",
-            "💡 창의적인 아이디어가 끊임없이 샘솟아요",
-            "🌟 밝은 에너지로 주변을 환하게 밝혀줘요",
-            "🔬 호기심이 넘치고 새로운 것을 배우는 걸 좋아해요",
-            "💛 유머 감각이 넘치고 분위기를 띄워줘요",
-        ],
-        "compatible": "불 타입과 잘 맞아요 🔥",
-        "pokemon_examples": "피카츄, 썬더, 에레키블",
-        "particles": "⚡💡✨💛",
-        "anim_class": "electric-zap",
-        "particle_color": "#eab308",
-    }
-}
-
-# Session state
-if 'page' not in st.session_state:
-    st.session_state.page = 'intro'
-if 'current_q' not in st.session_state:
-    st.session_state.current_q = 0
+# Session State 초기화 (사용자 선택 데이터 및 진행도 저장)
+if 'step' not in st.session_state:
+    st.session_state.step = 0
 if 'scores' not in st.session_state:
-    st.session_state.scores = {"water": 0, "grass": 0, "fire": 0, "electric": 0}
-if 'answers' not in st.session_state:
-    st.session_state.answers = []
+    st.session_state.scores = {"물": 0, "풀": 0, "불": 0, "전기": 0}
 
-def reset():
-    st.session_state.page = 'intro'
-    st.session_state.current_q = 0
-    st.session_state.scores = {"water": 0, "grass": 0, "fire": 0, "electric": 0}
-    st.session_state.answers = []
+# 3. 앱 화면 구성
+# 메인 홈 화면
+if st.session_state.step == 0:
+    st.markdown('<div class="title-box"><h1>✨ 나의 포켓몬 속성 진단 ✨</h1><p>12개의 질문으로 알아보는 나의 숨겨진 타입!</p></div>', unsafe_allow_html=True)
+    
+    # 귀여운 몬스터볼 이모지 애니메이션 공간
+    st.markdown("<h1 style='text-align: center; font-size: 80px; animation: float 2s infinite;'>🔴</h1>", unsafe_allow_html=True)
+    
+    if st.button("테스트 시작하기! 👉"):
+        st.session_state.step = 1
+        st.rerun()
 
-# ---- INTRO PAGE ----
-if st.session_state.page == 'intro':
-    st.markdown("""
-    <div class="hero-section">
-        <div class="pokeball-anim">🔮</div>
-        <h1 class="hero-title">포켓몬 속성<br>심리테스트</h1>
-        <p class="hero-sub">당신은 어떤 타입의 트레이너인가요?<br>10가지 질문으로 나의 속성을 알아보세요! ✨</p>
-    </div>
-    """, unsafe_allow_html=True)
-
-    # Type preview cards
-    st.markdown("""
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin:1.5rem 0;">
-        <div style="background:linear-gradient(135deg,#0077b6,#00b4d8);border-radius:20px;padding:1.2rem;text-align:center;animation:float 3s ease-in-out infinite;">
-            <div style="font-size:2rem;" class="water-bubble">🌊</div>
-            <div style="color:#fff;font-weight:800;font-size:1.1rem;">물 타입</div>
-            <div style="color:rgba(255,255,255,0.8);font-size:0.85rem;">깊고 감성적인</div>
-        </div>
-        <div style="background:linear-gradient(135deg,#2d6a4f,#52b788);border-radius:20px;padding:1.2rem;text-align:center;animation:float 3s ease-in-out infinite 0.5s;">
-            <div style="font-size:2rem;" class="leaf-sway">🌿</div>
-            <div style="color:#fff;font-weight:800;font-size:1.1rem;">풀 타입</div>
-            <div style="color:rgba(255,255,255,0.8);font-size:0.85rem;">차분하고 꾸준한</div>
-        </div>
-        <div style="background:linear-gradient(135deg,#dc2626,#f97316);border-radius:20px;padding:1.2rem;text-align:center;animation:float 3s ease-in-out infinite 1s;">
-            <div style="font-size:2rem;" class="fire-flicker">🔥</div>
-            <div style="color:#fff;font-weight:800;font-size:1.1rem;">불 타입</div>
-            <div style="color:rgba(255,255,255,0.8);font-size:0.85rem;">열정 넘치는</div>
-        </div>
-        <div style="background:linear-gradient(135deg,#ca8a04,#eab308);border-radius:20px;padding:1.2rem;text-align:center;animation:float 3s ease-in-out infinite 1.5s;">
-            <div style="font-size:2rem;" class="electric-zap">⚡</div>
-            <div style="color:#fff;font-weight:800;font-size:1.1rem;">전기 타입</div>
-            <div style="color:rgba(255,255,255,0.8);font-size:0.85rem;">빠르고 창의적인</div>
-        </div>
-    </div>
-    """, unsafe_allow_html=True)
-
-    col1, col2, col3 = st.columns([1, 2, 1])
-    with col2:
-        if st.button("✨ 테스트 시작하기!", key="start"):
-            st.session_state.page = 'quiz'
+# 질문 진행 화면 (1 ~ 12번)
+elif 1 <= st.session_state.step <= 12:
+    current_idx = st.session_state.step - 1
+    q_data = questions[current_idx]
+    
+    # 진행도 표시 바
+    st.progress(st.session_state.step / 12)
+    st.write(f"**Q{st.session_state.step}. {q_data['q']}**")
+    st.write("")
+    
+    # 버튼을 클릭하면 스코어를 더하고 즉시 다음 질문 단계로 넘어감
+    for option_text, type_attr in q_data['options']:
+        if st.button(option_text, key=f"q_{st.session_state.step}_{type_attr}"):
+            st.session_state.scores[type_attr] += 1
+            st.session_state.step += 1
             st.rerun()
 
-# ---- QUIZ PAGE ----
-elif st.session_state.page == 'quiz':
-    q_idx = st.session_state.current_q
-    q = questions[q_idx]
-    total = len(questions)
-    progress_pct = int((q_idx / total) * 100)
-
+# 4. 결과 분석 및 속성별 커스텀 페이지 출력
+else:
+    st.markdown('<div class="loading-text">🔮 당신의 에너지를 분석하는 중... 🔮</div>', unsafe_allow_html=True)
+    time.sleep(1.5) # 귀여운 로딩 연출
+    
+    # 가장 높은 점수의 속성 추출
+    final_type = max(st.session_state.scores, key=st.session_state.scores.get)
+    
+    # 속성별 디자인 정의 (물: 파랑, 풀: 초록, 불: 빨강, 전기: 노랑)
+    type_styles = {
+        "물": {
+            "bg": "#E0F2FE", "border": "#0284C7", "text": "#0369A1", "emoji": "🌊", 
+            "title": "침착하고 유연한 [물 속성]",
+            "desc": "당신은 깊은 바다처럼 차분하고 조용한 성격의 소유자입니다. 갈등을 부드럽게 흘려보낼 줄 알며, 주변 사람들을 편안하게 해주는 포용력이 있어요!"
+        },
+        "풀": {
+            "bg": "#DCFCE7", "border": "#16A34A", "text": "#15803D", "emoji": "🌱", 
+            "title": "싱그럽고 따뜻한 [풀 속성]",
+            "desc": "당신은 따사로운 햇살을 머금은 숲처럼 평화롭고 상냥한 사람입니다. 경청을 잘하고 공감 능력이 뛰어나 주변에 힐러 역할을 자처하네요!"
+        },
+        "불": {
+            "bg": "#FEE2E2", "border": "#DC2626", "text": "#B91C1C", "emoji": "🔥", 
+            "title": "열정적이고 용감한 [불 속성]",
+            "desc": "당신은 활활 타오르는 불꽃처럼 에너지가 넘치고 정의로운 리더 타입입니다! 한 번 꽂히면 끝을 보는 열정파이며 분위기 메이커입니다."
+        },
+        "전기": {
+            "bg": "#FEF9C3", "border": "#CA8A04", "text": "#A16207", "emoji": "⚡", 
+            "title": "짜릿하고 트렌디한 [전기 속성]",
+            "desc": "당신은 언제나 스파크가 튀듯 톡톡 튀는 아이디어와 유머 감각을 가진 사람입니다! 지루한 건 절대 못 참으며, 트렌디하고 빠른 행동력을 자랑해요."
+        }
+    }
+    
+    style = type_styles[final_type]
+    
+    # 속성 맞춤형 결과 카드 HTML 마크업 생성
     st.markdown(f"""
-    <div style="margin:0.5rem 0;">
-        <div style="display:flex;justify-content:space-between;color:#aac4ff;font-weight:700;font-size:0.9rem;margin-bottom:0.3rem;">
-            <span>질문 {q_idx+1} / {total}</span>
-            <span>{progress_pct}% 완료</span>
+        <div class="result-card" style="background-color: {style['bg']}; border-color: {style['border']}; color: {style['text']};">
+            <h1 style="font-size: 80px; margin: 0; animation: float 2.5s infinite;">{style['emoji']}</h1>
+            <h2 style="margin-top: 10px;">{style['title']}</h2>
+            <hr style="border-top: 2px dashed {style['border']};">
+            <p style="font-size: 20px; line-height: 1.6; font-weight: bold;">{style['desc']}</p>
         </div>
-        <div class="progress-container">
-            <div class="progress-fill" style="width:{progress_pct}%;"></div>
-        </div>
-    </div>
     """, unsafe_allow_html=True)
-
-    st.markdown(f"""
-    <div class="q-card">
-        <span class="q-emoji">{q['emoji']}</span>
-        <div class="q-number">Q U E S T I O N &nbsp; {q_idx+1:02d}</div>
-        <div class="q-text">{q['text']}</div>
-    </div>
-    """, unsafe_allow_html=True)
-
-    for opt_text, opt_type in q['options']:
-        if st.button(opt_text, key=f"opt_{q_idx}_{opt_type}"):
-            st.session_state.scores[opt_type] += 1
-            st.session_state.answers.append(opt_type)
-            if q_idx + 1 < total:
-                st.session_state.current_q += 1
-                st.rerun()
-            else:
-                st.session_state.page = 'result'
-                st.rerun()
-
-# ---- RESULT PAGE ----
-elif st.session_state.page == 'result':
-    winner = max(st.session_state.scores, key=st.session_state.scores.get)
-    r = results[winner]
-
-    # Animated particles for result
-    particles_html = f"""
-    <style>
-    .stApp {{
-        background: {r['bg_color']} !important;
-        background-size: 400% 400% !important;
-        animation: waveBG 5s ease infinite !important;
-    }}
-    </style>
-    """
-    st.markdown(particles_html, unsafe_allow_html=True)
-
-    # Floating decorative emojis
-    deco_emojis = r['particles']
-    deco_html = '<div style="position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;overflow:hidden;z-index:0;">'
-    import random as rnd
-    for i in range(15):
-        emoji = deco_emojis[i % len(deco_emojis)]
-        x = rnd.randint(0, 100)
-        y = rnd.randint(0, 100)
-        size = rnd.uniform(1.2, 2.5)
-        dur = rnd.uniform(2, 5)
-        delay = rnd.uniform(0, 3)
-        deco_html += f'<div style="position:absolute;left:{x}%;top:{y}%;font-size:{size}rem;opacity:0.3;animation:float {dur}s ease-in-out infinite {delay}s;">{emoji}</div>'
-    deco_html += '</div>'
-    st.markdown(deco_html, unsafe_allow_html=True)
-
-    # Score bar
-    total_answers = sum(st.session_state.scores.values())
-    score_pct = int((st.session_state.scores[winner] / total_answers) * 100)
-
-    # Main pokemon animation class
-    main_anim = r['anim_class']
-
-    st.markdown(f"""
-    <div class="result-card {r['color_class']}" style="background:{r['bg_color']};">
-        <div style="font-size:4.5rem;display:inline-block;" class="{main_anim}">{r['main_pokemon']}</div>
-        <div style="font-size:0.9rem;letter-spacing:3px;font-weight:800;color:rgba(255,255,255,0.8);text-transform:uppercase;margin:0.5rem 0;">당신의 속성은</div>
-        <div class="result-title">{r['name']}</div>
-        <div class="result-subtitle">{r['subtitle']}</div>
-        
-        <div style="background:rgba(255,255,255,0.2);border-radius:50px;padding:0.8rem 1.5rem;margin:1rem 0;font-size:1rem;font-weight:700;color:rgba(255,255,255,0.95);">
-            {r['name']} 성향 {score_pct}%
-        </div>
-        
-        <ul class="trait-list">
-    """, unsafe_allow_html=True)
-
-    traits_html = ""
-    for trait in r['traits']:
-        traits_html += f'<li>{trait}</li>'
-
-    st.markdown(traits_html + f"""
-        </ul>
-        
-        <div style="background:rgba(255,255,255,0.2);border-radius:16px;padding:1rem 1.5rem;margin:1rem 0;text-align:left;">
-            <div style="font-weight:800;font-size:1rem;color:rgba(255,255,255,0.95);margin-bottom:0.3rem;">🎮 나의 포켓몬 파트너</div>
-            <div style="color:rgba(255,255,255,0.9);font-size:0.95rem;">{r['pokemon_examples']}</div>
-        </div>
-        
-        <div style="background:rgba(255,255,255,0.15);border-radius:16px;padding:0.8rem 1.5rem;margin:0.5rem 0;font-size:0.95rem;color:rgba(255,255,255,0.9);font-weight:700;">
-            💕 {r['compatible']}
-        </div>
-    </div>
-    """, unsafe_allow_html=True)
-
-    # Score breakdown
-    st.markdown("""
-    <div style="background:rgba(0,0,0,0.2);border-radius:20px;padding:1.5rem;margin:1rem 0;backdrop-filter:blur(10px);">
-        <div style="font-size:1.1rem;font-weight:800;margin-bottom:1rem;text-align:center;">📊 속성별 점수</div>
-    """, unsafe_allow_html=True)
-
-    type_info = [
-        ("water", "🌊 물", "#00b4d8"),
-        ("grass", "🌿 풀", "#52b788"),
-        ("fire", "🔥 불", "#f97316"),
-        ("electric", "⚡ 전기", "#eab308"),
-    ]
-    for t, label, color in type_info:
-        pct = int((st.session_state.scores[t] / total_answers) * 100)
-        st.markdown(f"""
-        <div style="margin:0.5rem 0;">
-            <div style="display:flex;justify-content:space-between;margin-bottom:0.3rem;font-size:0.9rem;font-weight:700;">
-                <span>{label}</span><span>{pct}%</span>
-            </div>
-            <div style="background:rgba(255,255,255,0.1);border-radius:20px;height:8px;">
-                <div style="width:{pct}%;height:100%;border-radius:20px;background:{color};box-shadow:0 0 10px {color};transition:width 1s ease;"></div>
-            </div>
-        </div>
-        """, unsafe_allow_html=True)
-
-    st.markdown("</div>", unsafe_allow_html=True)
-
-    st.markdown('<div class="restart-btn">', unsafe_allow_html=True)
-    col1, col2, col3 = st.columns([1, 2, 1])
-    with col2:
-        if st.button("🔄 다시 테스트하기", key="restart"):
-            reset()
-            st.rerun()
-    st.markdown('</div>', unsafe_allow_html=True)
+    
+    st.write("")
+    st.write("")
+    
+    # 다시 하기 버튼
+    if st.button("🔄 테스트 다시 하기"):
+        st.session_state.step = 0
+        st.session_state.scores = {"물": 0, "풀": 0, "불": 0, "전기": 0}
+        st.rerun()
